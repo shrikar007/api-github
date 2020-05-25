@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
 )
 
@@ -20,7 +19,6 @@ type DBConfig struct {
 }
  
 func GetConfig() *Config {
-	fmt.Println(viper.GetString("database.postgres.username"))
 	if viper.GetBool("app.DB"){
 		return &Config{
 			DB: &DBConfig{

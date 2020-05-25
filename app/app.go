@@ -6,6 +6,7 @@ import (
 	"github-integration/config"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/spf13/viper"
 	"log"
@@ -48,7 +49,7 @@ func  InitConfig() (err error) {
 	viper.AddConfigPath("/home/perennial/go/src/github-integration/app/config")
 	err =viper.ReadInConfig()
 	if err != nil {
-		return
+		return err
 	}
 	return
 }
