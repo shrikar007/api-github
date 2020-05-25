@@ -1,6 +1,9 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	DB *DBConfig
@@ -12,16 +15,35 @@ type DBConfig struct {
 	Password string
 	Name     string
 	Charset  string
+	Port     string
+	Host     string
 }
  
 func GetConfig() *Config {
-	return &Config{
-		DB: &DBConfig{
-			Dialect:  viper.GetString("app.dialect"),
-			Username: viper.GetString("app.username"),
-			Password: viper.GetString("app.password"),
-			Name:     viper.GetString("app.name"),
-			Charset:  viper.GetString("app.charset"),
-		},
+	fmt.Println(viper.GetString("database.postgres.username"))
+	if viper.GetBool("app.DB"){
+		return &Config{
+			DB: &DBConfig{
+				Dialect:  viper.GetString("database.mysql.dialect"),
+				Username: viper.GetString("database.mysql.username"),
+				Password: viper.GetString("database.mysql.password"),
+				Name:     viper.GetString("database.mysql.name"),
+				Charset:  viper.GetString("database.mysql.charset"),
+			},
+		}
+
+	} else{
+		return &Config{
+			DB: &DBConfig{
+				Dialect:  viper.GetString("database.postgres.dialect"),
+				Username: viper.GetString("database.postgres.username"),
+				Password: viper.GetString("database.postgres.password"),
+				Name:     viper.GetString("database.postgres.name"),
+				Port: viper.GetString("database.postgres.port"),
+				Host: viper.GetString("database.postgres.host"),
+			},
+		}
 	}
+	return nil
+
 }

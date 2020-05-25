@@ -2,17 +2,14 @@ package app
 
 import (
 	"fmt"
-	"github-integration/app/constants"
 	"github-integration/app/model"
 	"github-integration/config"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
-	"github.com/spf13/viper"
 )
 
 type App struct {
@@ -20,18 +17,25 @@ type App struct {
 	DB     *gorm.DB
 }
 func (a *App) DbInitialize(config *config.Config) {
-	dbURI := fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=True",
-		config.DB.Username,
-		config.DB.Password,
-		config.DB.Name,
-		config.DB.Charset)
-
-	db, err := gorm.Open(config.DB.Dialect, dbURI)
-	if err != nil {
-		log.Fatal("Could not connect database")
+     var dbURI string
+	if config.DB.Dialect=="mysql"{
+		dbURI = fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=True",
+			config.DB.Username,
+			config.DB.Password,
+			config.DB.Name,
+			config.DB.Charset)
+	}else{
+		dbURI=fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+			config.DB.Host,
+			config.DB.Port,
+			config.DB.Username,
+			config.DB.Name,
+			config.DB.Password)
 	}
-
-
+	db , err :=gorm.Open(config.DB.Dialect,dbURI)
+	if err != nil {
+		log.Fatal("Could not connect database",err)
+	}
 	a.DB = model.DBMigrate(db)
 	a.Router = mux.NewRouter()
 	set:=&App{a.Router,a.DB}
@@ -39,22 +43,12 @@ func (a *App) DbInitialize(config *config.Config) {
 }
 
 func  InitConfig() (err error) {
-	path := os.Getenv(constants.ConfigPath)
-	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
-
-	log.Println("Searching for application configuration file...")
-	if path == "" {
-		p, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-		viper.AddConfigPath(p + constants.ConfigPath)
-		log.Println("Loading configs from default location...")
-	} else {
-		viper.AddConfigPath(path)
-		log.Printf("Loading configs from location: %s\n", path)
-	}
+	viper.SetConfigName("config") // name of config file (without extension)
+	viper.AddConfigPath("/home/perennial/go/src/github-integration/app/config")
 	err =viper.ReadInConfig()
 	if err != nil {
-		return err
+		return
 	}
 	return
 }
@@ -64,6 +58,10 @@ func (a *App) Close() error {
 }
 func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("GET")
+
+}
+func (a *App) Post(path string, f func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.HandleFunc(path, f).Methods("POST")
 }
 func (a *App) Run(host string) {
 	log.Printf("Starting server at port %v", host)

@@ -10,7 +10,11 @@ type Profile struct {
 	Name   string    `json:"name"`
 
 }
+type Repository struct {
+	Repo_name string `json:"repo"`
+}
 func DBMigrate(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&Profile{})
+	db.AutoMigrate(&Profile{},&Repository{})
 	return db
 }
+
