@@ -4,14 +4,17 @@ import (
 	"github-integration/app"
 	"github-integration/drivers"
 	"github-integration/helper"
-	"log"
+
+
+	"github.com/sirupsen/logrus"
 )
  
 func main() {
-	log.Println("Load configuration")
+	app.Initlogger()
+	logrus.Print("Load configuration")
 	app.InitConfig()
 	configObj := drivers.GetConfig()
-	log.Println("Start Application")
+	logrus.Print("Start Application")
 	appObj := new(app.App)
 	appObj.DbInitialize(configObj)
 	defer helper.Close(appObj)

@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
@@ -42,6 +43,14 @@ func (a *App) DbInitialize(config *drivers.Config) {
 	set:=&App{a.Router,a.DB}
 	a.setRouters(set)
 }
+func Initlogger(){
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+
+	logrus.SetLevel(logrus.DebugLevel)
+}
 
 func  InitConfig() (err error) {
 	viper.SetConfigType("toml")
@@ -49,7 +58,7 @@ func  InitConfig() (err error) {
 	viper.AddConfigPath(".")
 	err =viper.ReadInConfig()
 	if err != nil {
-		return err
+		logrus.WithError(err).Error("unable read config file")
 	}
 	return
 }
@@ -65,6 +74,6 @@ func (a *App) Post(path string, f func(w http.ResponseWriter, r *http.Request)) 
 	a.Router.HandleFunc(path, f).Methods("POST")
 }
 func (a *App) Run(host string) {
-	log.Printf("Starting server at port %v", host)
-	log.Fatal(http.ListenAndServe(host, a.Router))
+	logrus.Printf("Starting server at port %v", host)
+	logrus.Fatal(http.ListenAndServe(host, a.Router))
 }
