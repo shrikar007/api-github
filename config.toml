@@ -1,7 +1,6 @@
 [app]
       DB						= 	true  # mysql
 
-
 [database]
 	[database.mysql]
 		    dialect					= "mysql"

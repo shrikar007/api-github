@@ -46,7 +46,7 @@ func (a *App) DbInitialize(config *drivers.Config) {
 func  InitConfig() (err error) {
 	viper.SetConfigType("toml")
 	viper.SetConfigName("config") // name of config file (without extension)
-	viper.AddConfigPath("/home/perennial/go/src/github-integration")
+	viper.AddConfigPath(".")
 	err =viper.ReadInConfig()
 	if err != nil {
 		return err
