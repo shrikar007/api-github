@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 	"github-integration/app/model"
-	"github-integration/config"
+	"github-integration/drivers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -17,7 +17,7 @@ type App struct {
 	Router *mux.Router
 	DB     *gorm.DB
 }
-func (a *App) DbInitialize(config *config.Config) {
+func (a *App) DbInitialize(config *drivers.Config) {
      var dbURI string
 	if config.DB.Dialect=="mysql"{
 		dbURI = fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=True",
@@ -46,7 +46,7 @@ func (a *App) DbInitialize(config *config.Config) {
 func  InitConfig() (err error) {
 	viper.SetConfigType("toml")
 	viper.SetConfigName("config") // name of config file (without extension)
-	viper.AddConfigPath("/home/perennial/go/src/github-integration/app/config")
+	viper.AddConfigPath("/home/perennial/go/src/github-integration")
 	err =viper.ReadInConfig()
 	if err != nil {
 		return err

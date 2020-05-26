@@ -1,13 +1,13 @@
-package config
+package drivers
 
 import (
-	"github.com/spf13/viper"
+"github.com/spf13/viper"
 )
 
 type Config struct {
 	DB *DBConfig
 }
- 
+
 type DBConfig struct {
 	Dialect  string
 	Username string
@@ -17,7 +17,7 @@ type DBConfig struct {
 	Port     string
 	Host     string
 }
- 
+
 func GetConfig() *Config {
 	if viper.GetBool("app.DB"){
 		return &Config{
@@ -45,3 +45,4 @@ func GetConfig() *Config {
 	return nil
 
 }
+

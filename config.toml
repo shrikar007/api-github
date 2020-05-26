@@ -1,5 +1,5 @@
 [app]
-      DB						= 	true # mysql
+      DB						= 	true  # mysql
 
 
 [database]
