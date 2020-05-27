@@ -27,6 +27,8 @@ func GetConfig() *Config {
 				Password: viper.GetString("database.mysql.password"),
 				Name:     viper.GetString("database.mysql.name"),
 				Charset:  viper.GetString("database.mysql.charset"),
+				Host: viper.GetString("database.mysql.host"),
+				Port: viper.GetString("database.mysql.port"),
 			},
 		}
 

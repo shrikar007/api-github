@@ -8,6 +8,8 @@
         	password				= "root"
         	name					= "github-api"
         	charset					= "utf8"
+        	host                    ="192.168.43.106"
+        	port                    ="3306"
 
 	[database.postgres]
 	    dialect                 = "postgres"

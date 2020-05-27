@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
+	"os"
+	"path"
 )
 
 type App struct {
@@ -21,11 +23,13 @@ type App struct {
 func (a *App) DbInitialize(config *drivers.Config) {
      var dbURI string
 	if config.DB.Dialect=="mysql"{
-		dbURI = fmt.Sprintf("%s:%s@/%s?charset=%s&parseTime=True",
+		dbURI = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True",
 			config.DB.Username,
 			config.DB.Password,
-			config.DB.Name,
-			config.DB.Charset)
+			config.DB.Host,
+			config.DB.Port,
+       		config.DB.Name,
+			config.DB.Charset,)
 	}else{
 		dbURI=fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
 			config.DB.Host,
@@ -44,6 +48,19 @@ func (a *App) DbInitialize(config *drivers.Config) {
 	a.setRouters(set)
 }
 func Initlogger(){
+	homeDirPath, err := os.UserHomeDir()
+	if err != nil {
+		logrus.WithError(err).Error("unable to get path to home directory")
+		os.Exit(1)
+	}
+
+	_, err = os.Stat(path.Join(homeDirPath, "git-api", "logs"))
+	if err != nil {
+		err = os.MkdirAll(path.Join(homeDirPath, "git-api", "logs"), os.ModePerm)
+		if err != nil {
+			logrus.WithError(err).Error("unable to create logs folder for app")
+		}
+	}
 	logrus.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05",
