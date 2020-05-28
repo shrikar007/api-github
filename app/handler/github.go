@@ -44,6 +44,5 @@ func GetRepo(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logrus.WithField("Profile",vars["username"]).Print("fetched all repositories of this profile and stored in database")
-
 }
  

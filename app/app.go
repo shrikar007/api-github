@@ -34,10 +34,13 @@ func New()(apps App,err error){
 	logrus.Print("Configuration Loaded")
 	configObj := drivers.GetConfig()
 	logrus.Print("Start Application")
-	app.DbInitialize(configObj)
+	db:=app.DbInitialize(configObj)
+	route:=app.Initroutes()
+	set:=&App{route,db}
+	app.setRouters(set)
 	return app, nil
 }
-func (a *App) DbInitialize(config *drivers.Config) {
+func (a *App) DbInitialize(config *drivers.Config) (*gorm.DB) {
      var dbURI string
 	if config.DB.Dialect=="mysql"{
 		dbURI = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True",
@@ -60,9 +63,11 @@ func (a *App) DbInitialize(config *drivers.Config) {
 		logrus.WithError(err).Error("Could not connect database")
 	}
 	a.DB = model.DBMigrate(db)
-	a.Router = mux.NewRouter()//route init function
-	set:=&App{a.Router,a.DB}
-	a.setRouters(set)
+	return a.DB
+}
+func(a *App)  Initroutes() (*mux.Router) {
+	a.Router=mux.NewRouter()
+	return a.Router
 }
 func Initlogger(){
 	homeDirPath, err := os.UserHomeDir()
