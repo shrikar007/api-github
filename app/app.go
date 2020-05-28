@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github-integration/app/jobscheduler"
 	"github-integration/app/model"
 	"github-integration/drivers"
 	"github.com/gorilla/mux"
@@ -10,15 +11,31 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
+	"io"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
+	"time"
 )
 
 type App struct {
 	Router *mux.Router
 	DB     *gorm.DB
+}
+func New()(apps App,err error){
+	app:=App{}
+	Initlogger()
+	logrus.Print("Logger initialized")
+	logrus.Print("Loading configuration")
+	if err=InitConfig();err!=nil{
+		return
+	}
+	logrus.Print("Configuration Loaded")
+	configObj := drivers.GetConfig()
+	logrus.Print("Start Application")
+	app.DbInitialize(configObj)
+	return app, nil
 }
 func (a *App) DbInitialize(config *drivers.Config) {
      var dbURI string
@@ -40,38 +57,38 @@ func (a *App) DbInitialize(config *drivers.Config) {
 	}
 	db , err :=gorm.Open(config.DB.Dialect,dbURI)
 	if err != nil {
-		log.Fatal("Could not connect database",err)
+		logrus.WithError(err).Error("Could not connect database")
 	}
 	a.DB = model.DBMigrate(db)
-	a.Router = mux.NewRouter()
+	a.Router = mux.NewRouter()//route init function
 	set:=&App{a.Router,a.DB}
 	a.setRouters(set)
 }
 func Initlogger(){
 	homeDirPath, err := os.UserHomeDir()
-	if err != nil {
-		logrus.WithError(err).Error("unable to get path to home directory")
-		os.Exit(1)
-	}
-
-	_, err = os.Stat(path.Join(homeDirPath, "git-api", "logs"))
-	if err != nil {
-		err = os.MkdirAll(path.Join(homeDirPath, "git-api", "logs"), os.ModePerm)
-		if err != nil {
-			logrus.WithError(err).Error("unable to create logs folder for app")
-		}
-	}
 	logrus.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
-
+	runID := time.Now().Format("git-api-2006-01-02-15-04-05")
+	_, err = os.Stat(path.Join(homeDirPath, "git-api-app","logs"))
+	if err != nil {
+		err = os.MkdirAll(path.Join(homeDirPath, "git-api-app","logs"), os.ModePerm)
+		if err != nil {
+			logrus.WithError(err).Error("unable to create logs folder for app")
+		}
+	}
+	logLocation := filepath.Join(homeDirPath,"git-api-app","logs", runID + ".log")
+	logFile, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to open log file")
+	}
 	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetOutput(io.MultiWriter(os.Stderr, logFile))
 }
-
 func  InitConfig() (err error) {
 	viper.SetConfigType("toml")
-	viper.SetConfigName("config") // name of config file (without extension)
+	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	err =viper.ReadInConfig()
 	if err != nil {
@@ -87,10 +104,8 @@ func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("GET")
 
 }
-func (a *App) Post(path string, f func(w http.ResponseWriter, r *http.Request)) {
-	a.Router.HandleFunc(path, f).Methods("POST")
-}
 func (a *App) Run(host string) {
 	logrus.Printf("Starting server at port %v", host)
+	go jobscheduler.Jobschedule()
 	logrus.Fatal(http.ListenAndServe(host, a.Router))
 }

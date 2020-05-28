@@ -1,5 +1,6 @@
 [app]
-      DB						= 	true  # mysql
+      DB						= 	false  # true=mysql and false=postgres
+      schedule_url              = "http://localhost:8000/profile/shrikar007"
 
 [database]
 	[database.mysql]
