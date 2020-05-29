@@ -9,7 +9,7 @@ COPY . .
 
 RUN  go build -a -o /main .
 
-FROM alpine:3.9
+FROM alpine
 
 WORKDIR /
 

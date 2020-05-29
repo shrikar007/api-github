@@ -19,6 +19,10 @@ import (
 	"time"
 )
 
+const (
+	LOGGER_FOLDER    = "git-api-app"
+	INSIDE_LOGGER_FOLDER = "logs"
+)
 type App struct {
 	Router *mux.Router
 	DB     *gorm.DB
@@ -76,14 +80,14 @@ func Initlogger(){
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
 	runID := time.Now().Format("git-api-2006-01-02-15-04-05")
-	_, err = os.Stat(path.Join(homeDirPath, "git-api-app","logs"))
+	_, err = os.Stat(path.Join(homeDirPath, LOGGER_FOLDER,INSIDE_LOGGER_FOLDER))
 	if err != nil {
-		err = os.MkdirAll(path.Join(homeDirPath, "git-api-app","logs"), os.ModePerm)
+		err = os.MkdirAll(path.Join(homeDirPath, LOGGER_FOLDER,INSIDE_LOGGER_FOLDER), os.ModePerm)
 		if err != nil {
 			logrus.WithError(err).Error("unable to create logs folder for app")
 		}
 	}
-	logLocation := filepath.Join(homeDirPath,"git-api-app","logs", runID + ".log")
+	logLocation := filepath.Join(homeDirPath,LOGGER_FOLDER,INSIDE_LOGGER_FOLDER, runID + ".log")
 	logFile, err := os.OpenFile(logLocation, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to open log file")
@@ -111,6 +115,6 @@ func (a *App) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
 }
 func (a *App) Run(host string) {
 	logrus.Printf("Starting server at port %v", host)
-	go jobscheduler.Jobschedule()
+	go jobscheduler.Noon()
 	logrus.Fatal(http.ListenAndServe(host, a.Router))
 }
