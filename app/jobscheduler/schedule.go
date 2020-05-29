@@ -31,7 +31,7 @@ func Jobschedule(){
 }
 func Noon(){
 	t := time.Now()
-	n := time.Date(t.Year(), t.Month(), t.Day(), 15, 33, 0, 0, t.Location())
+	n := time.Date(t.Year(), t.Month(), t.Day(), 13, 0, 0, 0, t.Location())
 	d := n.Sub(t)
 	if d < 0 {
 		n = n.Add(24 * time.Hour)
