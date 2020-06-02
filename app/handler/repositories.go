@@ -11,22 +11,6 @@ import (
 	gormbulk "github.com/t-tiger/gorm-bulk-insert/v2"
 	"net/http"
 )
- 
-func GetProfile(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	vars:=mux.Vars(r)
-	ctx:=context.Background()
-	client := github.NewClient(nil)
-	user,_,_ :=client.Users.Get(ctx,vars["username"])
-	pro := model.Profile{Name: *user.Name}
-	if err := db.Save(&pro).Error; err != nil {
-		common.RespondError(w, http.StatusInternalServerError, err.Error())
-		logrus.WithError(err).Error("unable read config file")
-		return
-	}
-	common.RespondJSON(w, http.StatusCreated, pro)
-	logrus.WithField("Profile",pro).Print("fetched github user full name and stored in database")
-}
- 
 func GetRepo(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	ctx:=context.Background()
 	vars:=mux.Vars(r)
